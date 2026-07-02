@@ -4,4 +4,5 @@ dotenv.config();
 
 export const config_ENV=({
     PORT:process.env.PORT  || 3000,
+    JWT_SECRET:process.env.JWT_SECRET,
 })
