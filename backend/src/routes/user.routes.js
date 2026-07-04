@@ -6,7 +6,6 @@ import {profile} from "../controllers/profilecontrollers.js";
 
 export const router=express.Router();
 
-
 router.post("/register",register);
 router.post("/login",login);
 router.get("/profile",profile);

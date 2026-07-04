@@ -1,49 +1,37 @@
+import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
+        if (!email || !password) {
+            throw new ApiError(400, "Email and password are required");
+        }
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({
-                success: false,
-                message: "invalid email ",
-            });
+            throw new ApiError(400, "Invalid email or password");
         }
         const match = await bcrypt.compare(password, user.password);
         if (!match) {
-            return res.status(400).json({
-                success: false,
-                message: "invalid password",
-            })
+            throw new ApiError(400, "Invalid email or password");
         }
-        const token = jwt.sign({
-            id: user._id,
-            role: user.role
-        },
-            process.env.JWT_SECRET,
+        const token = jwt.sign(
             {
-                expiresIn: "7d"
-            }
-        );
-
-        return res.status(200).json({
-            success: true,
-            message: "Login successful",
-            token,
-            user: {
-                id: user._id,
-                fullname: user.fullname,
-                email: user.email,
+                id: user.id,
                 role: user.role,
             },
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "internal error",
+            process.env.JWT_SECRET, {
+            expiresIn: "7d",
+        }
+        )
+        return res.status(200).json({
+            success: true,
+            message: "user login successfully",
+            token,
         })
+    } catch (error) {
+        next(error);
     }
-}
+} 
